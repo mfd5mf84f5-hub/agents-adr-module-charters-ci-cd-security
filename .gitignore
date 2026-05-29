@@ -1,0 +1,116 @@
+# Python compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Node dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment files (exclude all .env variants)
+.env
+.env.local
+.env.*.local
+.env.*.vault
+
+# Secrets and credentials (never commit)
+*.key
+*.pem
+*.p8
+*.pkcs8
+**/secrets/
+secrets.json
+.aws/credentials
+.aws/config
+.kube/config
+*.gpg
+vault-token
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-workspace
+.project
+.pydevproject
+.settings/
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+
+# Build and dist
+.cache/
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Logs
+*.log
+logs/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# OS generated files
+.DS_Store
+Thumbs.db
+.finder
+desktop.ini
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Feast feature store
+feast_repo/
+.feast/
+
+# Local development artifacts
+.local/
+*.local

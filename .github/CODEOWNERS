@@ -1,0 +1,37 @@
+# CODEOWNERS - Repository code ownership and review requirements
+# This file defines who is responsible for code reviews and approval in specific directories.
+# Format: <path> <owner1> <owner2> ...
+
+# Root level and configuration
+README.md @mfd5mf84f5-hub
+.github/ @mfd5mf84f5-hub
+docs/ @mfd5mf84f5-hub
+requirements.txt @mfd5mf84f5-hub
+pyproject.toml @mfd5mf84f5-hub
+
+# Core schema architect module
+src/agent_a/ @mfd5mf84f5-hub
+src/agent_a/*.py @mfd5mf84f5-hub
+schemas/ @mfd5mf84f5-hub
+reference/ @mfd5mf84f5-hub
+
+# Feature engineering module
+src/feature_engineering/ @mfd5mf84f5-hub
+src/feature_engineering/*.py @mfd5mf84f5-hub
+
+# Tests
+tests/ @mfd5mf84f5-hub
+tests/*.py @mfd5mf84f5-hub
+
+# Security and compliance
+docs/security/ @mfd5mf84f5-hub
+docs/compliance/ @mfd5mf84f5-hub
+.pre-commit-config.yaml @mfd5mf84f5-hub
+
+# CI/CD and deployment
+.github/workflows/ @mfd5mf84f5-hub
+docs/deployment/ @mfd5mf84f5-hub
+docs/release/ @mfd5mf84f5-hub
+
+# Default for all other files
+* @mfd5mf84f5-hub
