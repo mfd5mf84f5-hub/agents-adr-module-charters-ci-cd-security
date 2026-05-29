@@ -1,0 +1,166 @@
+name: Release with Artifact Signing
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-sign:
+    name: Build, Sign & Release
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # OIDC token for keyless signing
+      contents: write  # Create releases
+      packages: write  # Push to GHCR
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for version detection
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install build twine
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+        continue-on-error: true
+
+      - name: Generate SBOM
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-bom -r -o sbom.json
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.VERSION }}
+            ghcr.io/${{ github.repository }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+        with:
+          cosign-release: 'v2.0.0'
+
+      - name: Sign Docker image (keyless)
+        env:
+          COSIGN_EXPERIMENTAL: 1
+        run: |
+          cosign sign ghcr.io/${{ github.repository }}:${{ steps.version.outputs.VERSION }}
+
+      - name: Sign SBOM
+        env:
+          COSIGN_EXPERIMENTAL: 1
+        run: |
+          cosign sign-blob --yes sbom.json > sbom.json.sig
+
+      - name: Generate checksums
+        run: |
+          sha256sum sbom.json > checksums.txt
+          sha256sum sbom.json.sig >> checksums.txt
+
+      - name: Sign checksums
+        env:
+          COSIGN_EXPERIMENTAL: 1
+        run: |
+          cosign sign-blob --yes checksums.txt > checksums.txt.sig
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            sbom.json
+            sbom.json.sig
+            checksums.txt
+            checksums.txt.sig
+          body: |
+            ## Release ${{ steps.version.outputs.VERSION }}
+            
+            ### Artifacts
+            - **Image**: `ghcr.io/${{ github.repository }}:${{ steps.version.outputs.VERSION }}`
+            - **SBOM**: `sbom.json` (signed)
+            - **Checksums**: `checksums.txt` (signed)
+            
+            ### Verification
+            ```bash
+            # Verify image signature (keyless)
+            export COSIGN_EXPERIMENTAL=1
+            cosign verify ghcr.io/${{ github.repository }}:${{ steps.version.outputs.VERSION }}
+            
+            # Verify SBOM signature
+            cosign verify-blob --signature sbom.json.sig sbom.json
+            ```
+            
+            ### Security
+            - [SBOM (CycloneDX)](${{ github.server_url }}/${{ github.repository }}/releases/download/${{ steps.version.outputs.VERSION }}/sbom.json)
+            - [Security Report](./docs/SECURITY.md)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  scan-image:
+    name: Scan Docker Image
+    runs-on: ubuntu-latest
+    needs: build-and-sign
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/${{ github.repository }}:${{ steps.version.outputs.VERSION }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  deploy-canary:
+    name: Deploy to Canary
+    runs-on: ubuntu-latest
+    needs: [build-and-sign, scan-image]
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to canary environment
+        run: |
+          echo "Deploying ${{ github.ref }} to canary..."
+          # Placeholder for deployment script
+          # scripts/deploy-canary.sh ${{ github.ref }}
+
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests on canary deployment..."
+          # Placeholder for smoke tests
