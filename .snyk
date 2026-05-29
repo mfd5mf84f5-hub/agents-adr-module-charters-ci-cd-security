@@ -1,0 +1,29 @@
+# Snyk policy file
+# Controls Snyk scanning behavior
+
+version: v1.25.0
+ignore:
+  # Can add CVE exceptions here with dates
+  # Example:
+  # SNYK-PYTHON-PACKAGENAME-XXXXXX:
+  #   - 'schema_architect'
+  #   - expires: 2026-06-01
+  #     reason: Patched in next release
+
+patches: {}
+
+policy:
+  # Severity threshold for blocking
+  severity-threshold: high
+  
+  # File patterns to scan
+  includedFiles:
+    - 'requirements.txt'
+    - 'pyproject.toml'
+    - 'src/**/*.py'
+  
+  # File patterns to exclude
+  excludedFiles:
+    - 'tests/**'
+    - 'docs/**'
+    - '.venv/**'

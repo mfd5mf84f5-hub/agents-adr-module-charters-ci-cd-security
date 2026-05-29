@@ -1,0 +1,58 @@
+version: 1
+updates:
+  # Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    allow:
+      - dependency-type: "all"
+    pull-requests-limit: 5
+    reviewers:
+      - "mfd5mf84f5-hub"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(deps):"
+    grouped:
+      - dependency-type: "dev-dependencies"
+        patterns:
+          - "pytest*"
+          - "black"
+          - "flake8"
+          - "isort"
+          - "mypy"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:30"
+    pull-requests-limit: 5
+    reviewers:
+      - "mfd5mf84f5-hub"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci):"
+
+  # Security updates (expedited)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    security-updates-only: true
+    pull-requests-limit: 10
+    reviewers:
+      - "mfd5mf84f5-hub"
+    labels:
+      - "security"
+      - "automated"
+    commit-message:
+      prefix: "security(deps):"
